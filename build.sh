@@ -1,1 +1,1 @@
-python3 src/main.py "/TadaTeki/"
+python3 src/main.py "/StaticSiteGenerator/"
