@@ -9,24 +9,36 @@ def main():
     print ("hello world")
     source_dir = "static"
     dest_dir = "public"
+    content_dir = "content"
+    template_path = "template.html"
+
     cur_dir = os.getcwd()
 
-    abs_source_dir = os.path.join(cur_dir, source_dir)
-    abs_dest_dir = os.path.join(cur_dir, dest_dir)
+    abs_source_path = os.path.join(cur_dir, source_dir)
+    abs_dest_path = os.path.join(cur_dir, dest_dir)
+    abs_content_path = os.path.join(cur_dir, content_dir)
+    abs_template_path = os.path.join(cur_dir, template_path)
 
-    delete_tree(abs_dest_dir)
-    copy_tree(abs_source_dir,abs_dest_dir)
+    delete_tree(abs_dest_path)
+    copy_tree(abs_source_path, abs_dest_path)
+ 
+    generate_html_tree(abs_content_path, abs_template_path, abs_dest_path)
 
-    from_path = "content/index.md"
-    template_path = "template.html"
-    dest_path = "public/index.html"
 
-    generate_page(from_path, template_path, dest_path)
+def generate_html_tree(abs_content_path, abs_template_path, abs_dest_path):
+    for entry in os.listdir(abs_content_path):
+        abs_entry_path = os.path.join(abs_content_path,entry)
+        abs_tgt_path = os.path.join(abs_dest_path, entry)
 
+        if os.path.isdir(abs_entry_path) == False:
+            generate_page(abs_entry_path, abs_template_path, abs_tgt_path.replace(".md", ".html"))
+        else:
+            os.mkdir(abs_tgt_path)
+            generate_html_tree(abs_entry_path, abs_template_path, abs_tgt_path)      
 
 def delete_tree(abs_dest_dir):
-    for dir in os.listdir(abs_dest_dir):
-        tgt_path = os.path.join(abs_dest_dir,dir)
+    for entry in os.listdir(abs_dest_dir):
+        tgt_path = os.path.join(abs_dest_dir,entry)
         if os.path.isdir(tgt_path):
             shutil.rmtree(tgt_path)
         else:
