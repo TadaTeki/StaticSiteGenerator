@@ -1,6 +1,7 @@
 import os
 import shutil
 import re
+import sys
 
 from markdown_block import markdown_to_blocks
 from blockhtml import block_to_html, markdown_to_html_node
@@ -8,11 +9,15 @@ from blockhtml import block_to_html, markdown_to_html_node
 def main():
     print ("hello world")
     source_dir = "static"
-    dest_dir = "public"
+    dest_dir = "docs"
     content_dir = "content"
     template_path = "template.html"
+    basepath = "/"
 
     cur_dir = os.getcwd()
+    if len(sys.argv)> 1:
+        basepath = sys.argv[1]
+
 
     abs_source_path = os.path.join(cur_dir, source_dir)
     abs_dest_path = os.path.join(cur_dir, dest_dir)
@@ -22,19 +27,19 @@ def main():
     delete_tree(abs_dest_path)
     copy_tree(abs_source_path, abs_dest_path)
  
-    generate_html_tree(abs_content_path, abs_template_path, abs_dest_path)
+    generate_html_tree(abs_content_path, abs_template_path, abs_dest_path, basepath)
 
 
-def generate_html_tree(abs_content_path, abs_template_path, abs_dest_path):
+def generate_html_tree(abs_content_path, abs_template_path, abs_dest_path, basepath):
     for entry in os.listdir(abs_content_path):
         abs_entry_path = os.path.join(abs_content_path,entry)
         abs_tgt_path = os.path.join(abs_dest_path, entry)
 
         if os.path.isdir(abs_entry_path) == False:
-            generate_page(abs_entry_path, abs_template_path, abs_tgt_path.replace(".md", ".html"))
+            generate_page(abs_entry_path, abs_template_path, abs_tgt_path.replace(".md", ".html"), basepath)
         else:
             os.mkdir(abs_tgt_path)
-            generate_html_tree(abs_entry_path, abs_template_path, abs_tgt_path)      
+            generate_html_tree(abs_entry_path, abs_template_path, abs_tgt_path, basepath)      
 
 def delete_tree(abs_dest_dir):
     for entry in os.listdir(abs_dest_dir):
@@ -63,7 +68,7 @@ def extract_title(markdown):
 
     raise Exception("Title is Necessary")    
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r", encoding="utf-8") as f:
         md = f.read()
@@ -78,7 +83,9 @@ def generate_page(from_path, template_path, dest_path):
 
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html_string)
-    print(template)
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
+    print("basepath", basepath)
 
     with open(dest_path, "w", encoding="utf-8") as h:
         h.write(template)
